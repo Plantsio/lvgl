@@ -141,10 +141,10 @@ void _lv_event_mark_deleted(lv_obj_t * obj)
 {
     lv_event_t * e = event_head;
 
-    while(e) {
-        if(e->current_target == obj || e->target == obj) e->deleted = 1;
-        e = e->prev;
-    }
+//    while(e) {
+//        if(e->current_target == obj || e->target == obj) e->deleted = 1;
+//        e = e->prev;
+//    }
 }
 
 
