@@ -48,6 +48,8 @@ endif()
 
 target_compile_definitions(${COMPONENT_LIB} PUBLIC "-DLV_CONF_INCLUDE_SIMPLE")
 
+target_compile_definitions(${COMPONENT_LIB} PUBLIC -DLV_CONF_PATH=${LVGL_ROOT_DIR}/../../ivy/app/config/lv_conf.h)
+
 if(CONFIG_LV_ATTRIBUTE_FAST_MEM_USE_IRAM)
   target_compile_definitions(${COMPONENT_LIB}
                              PUBLIC "-DLV_ATTRIBUTE_FAST_MEM=IRAM_ATTR")
