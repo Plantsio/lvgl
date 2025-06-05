@@ -37,6 +37,10 @@ static void lv_lottie_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 static void anim_exec_cb(void * var, int32_t v);
 static void lottie_update(lv_lottie_t * lottie, int32_t v);
 
+#if LV_COLOR_DEPTH == 16
+static void convert_to_rgb565(uint8_t *in, int width, int height);
+#endif
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -78,7 +82,7 @@ void lv_lottie_set_buffer(lv_obj_t * obj, int32_t w, int32_t h, void * buf)
 
     tvg_swcanvas_set_target(lottie->tvg_canvas, buf, stride / 4, w, h, TVG_COLORSPACE_ARGB8888);
     tvg_canvas_push(lottie->tvg_canvas, lottie->tvg_paint);
-    lv_canvas_set_buffer(obj, buf, w, h, LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED);
+    lv_canvas_set_buffer(obj, buf, w, h, LV_COLOR_FORMAT_NATIVE);
     tvg_picture_set_size(lottie->tvg_paint, w, h);
 
     /* Rendered output images are premultiplied */
@@ -93,8 +97,8 @@ void lv_lottie_set_buffer(lv_obj_t * obj, int32_t w, int32_t h, void * buf)
 
 void lv_lottie_set_draw_buf(lv_obj_t * obj, lv_draw_buf_t * draw_buf)
 {
-    if(draw_buf->header.cf != LV_COLOR_FORMAT_ARGB8888 && draw_buf->header.cf != LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED) {
-        LV_LOG_WARN("The draw buf needs to have ARGB8888 or ARGB8888_PREMULTIPLIED color format");
+    if(draw_buf->header.cf != LV_COLOR_FORMAT_NATIVE) {
+        LV_LOG_WARN("The draw buf needs to have correct color format");
         return;
     }
 
@@ -215,6 +219,31 @@ static void anim_exec_cb(void * var, int32_t v)
     }
 }
 
+#if LV_COLOR_DEPTH == 16
+static void convert_to_rgb565(uint8_t *in, int width, int height)
+{
+    uint16_t *out = (uint16_t *)in;
+    int numPixels = width * height;
+
+    for (int i = 0; i < numPixels; i++) {
+        uint8_t r = in[i * 4 + 2];
+        uint8_t g = in[i * 4 + 1];
+        uint8_t b = in[i * 4 + 0];
+
+        uint16_t r565 = (r >> 3) & 0x1F;
+        uint16_t g565 = (g >> 2) & 0x3F;
+        uint16_t b565 = (b >> 3) & 0x1F;
+
+        uint16_t rgb565Value = (r565 << 11) | (g565 << 5) | b565;
+#if LV_COLOR_16_SWAP == 0
+        out[i] = rgb565Value;
+#else
+        out[i] = (((rgb565Value) >> 8) | (((rgb565Value) & 0xFF) << 8));
+#endif
+    }
+}
+#endif
+
 static void lottie_update(lv_lottie_t * lottie, int32_t v)
 {
     lv_obj_t * obj = (lv_obj_t *) lottie;
@@ -231,6 +260,14 @@ static void lottie_update(lv_lottie_t * lottie, int32_t v)
     tvg_canvas_update(lottie->tvg_canvas);
     tvg_canvas_draw(lottie->tvg_canvas);
     tvg_canvas_sync(lottie->tvg_canvas);
+
+#if LV_COLOR_DEPTH == 16
+    lv_draw_buf_t *canvas_draw_buf = lv_canvas_get_draw_buf(obj);
+
+    if (canvas_draw_buf) {
+        convert_to_rgb565(canvas_draw_buf->data, canvas_draw_buf->header.w, canvas_draw_buf->header.h);
+    }
+#endif
 
     lv_obj_invalidate(obj);
 }
