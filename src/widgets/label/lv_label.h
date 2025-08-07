@@ -51,6 +51,7 @@ typedef enum {
     LV_LABEL_LONG_MODE_SCROLL,           /**< Keep the size and roll the text back and forth*/
     LV_LABEL_LONG_MODE_SCROLL_CIRCULAR,  /**< Keep the size and roll the text circularly*/
     LV_LABEL_LONG_MODE_CLIP,             /**< Keep the size and clip the text out of it*/
+    LV_LABEL_LONG_MODE_SCROLL_VER,
 } lv_label_long_mode_t;
 
 #if LV_USE_OBJ_PROPERTY
