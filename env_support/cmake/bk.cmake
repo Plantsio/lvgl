@@ -20,8 +20,6 @@ if(CONFIG_LV_BUILD_DEMOS)
     file(GLOB_RECURSE DEMO_SOURCES ${LVGL_ROOT_DIR}/demos/*.c)
 endif()
 
-message("lvgl lvgl lvgl")
-
 armino_component_register(
     SRCS ${SOURCES} ${EXAMPLE_SOURCES} ${DEMO_SOURCES}
     INCLUDE_DIRS
